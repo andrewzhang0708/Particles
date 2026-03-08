@@ -6,6 +6,8 @@ public class GuideController : MonoBehaviour
     public Transform guideParticles;
     public Transform targetPoint;
 
+    public KyleWave kyleWave;
+
     [Header("Effect Objects")]
     public ParticleSystem guideParticleSystem;
     public GameObject arrivalSwirlParticles;
@@ -178,9 +180,15 @@ public class GuideController : MonoBehaviour
         humanModel.localScale = Vector3.Lerp(Vector3.zero, humanFinalScale, eased);
 
         if (t >= 1f)
+{
+        humanGrowing = false;
+        humanModel.localScale = humanFinalScale;
+
+        if (kyleWave != null)
         {
-            humanGrowing = false;
-            humanModel.localScale = humanFinalScale;
+            Debug.Log("StartWave called");
+            kyleWave.StartWave();
         }
+    }
     }
 }
