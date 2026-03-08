@@ -1,4 +1,3 @@
-using System.Collections;
 using UnityEngine;
 
 public class KyleWave : MonoBehaviour
@@ -13,6 +12,14 @@ public class KyleWave : MonoBehaviour
     private bool initialized = false;
     private bool isWaving = false;
 
+    private float waveTimer = 0f;
+    private float raiseDuration = 0.35f;
+    private float holdDuration = 1.5f;
+    private float lowerDuration = 0.5f;
+
+    private Quaternion upperRaised;
+    private Quaternion lowerRaised;
+
     void Awake()
     {
         animator = GetComponent<Animator>();
@@ -26,6 +33,11 @@ public class KyleWave : MonoBehaviour
             {
                 upperArmStartRot = rightUpperArm.localRotation;
                 lowerArmStartRot = rightLowerArm.localRotation;
+
+                // 这组角度先用更明显一点的
+                upperRaised = upperArmStartRot * Quaternion.Euler(-65f, 0f, -15f);
+                lowerRaised = lowerArmStartRot * Quaternion.Euler(-35f, 0f, 0f);
+
                 initialized = true;
             }
         }
@@ -34,54 +46,47 @@ public class KyleWave : MonoBehaviour
     public void StartWave()
     {
         Debug.Log("KyleWave.StartWave entered");
+
         if (!initialized || isWaving) return;
-        StartCoroutine(WaveRoutine());
+
+        waveTimer = 0f;
+        isWaving = true;
     }
 
-    private IEnumerator WaveRoutine()
+    void LateUpdate()
     {
-        isWaving = true;
+        if (!isWaving || !initialized) return;
 
-        // 先把手臂抬起来
-        float raiseDuration = 0.4f;
-        float t = 0f;
+        waveTimer += Time.deltaTime;
 
-        Quaternion upperRaised = upperArmStartRot * Quaternion.Euler(-35f, 0f, -25f);
-        Quaternion lowerRaised = lowerArmStartRot * Quaternion.Euler(-20f, 0f, 0f);
-
-        while (t < raiseDuration)
+        // 1. 抬手
+        if (waveTimer < raiseDuration)
         {
-            t += Time.deltaTime;
-            float k = t / raiseDuration;
-
-            rightUpperArm.localRotation = Quaternion.Slerp(upperArmStartRot, upperRaised, k);
-            rightLowerArm.localRotation = Quaternion.Slerp(lowerArmStartRot, lowerRaised, k);
-
-            yield return null;
+            float t = waveTimer / raiseDuration;
+            rightUpperArm.localRotation = Quaternion.Slerp(upperArmStartRot, upperRaised, t);
+            rightLowerArm.localRotation = Quaternion.Slerp(lowerArmStartRot, lowerRaised, t);
         }
-
-        // 挥手：前臂来回摆几次
-        int waveCount = 15;
-        float waveSpeed = 5f;
-
-        for (int i = 0; i < waveCount; i++)
+        // 2. 挥手
+        else if (waveTimer < raiseDuration + holdDuration)
         {
-            float timer = 0f;
-            while (timer < Mathf.PI)
-            {
-                timer += Time.deltaTime * waveSpeed;
+            float localT = waveTimer - raiseDuration;
+            float angle = Mathf.Sin(localT * 10f) * 35f;
 
-                float angle = Mathf.Sin(timer) * 25f;
-                rightLowerArm.localRotation = lowerRaised * Quaternion.Euler(0f, angle, 0f);
-
-                yield return null;
-            }
+            rightUpperArm.localRotation = upperRaised;
+            rightLowerArm.localRotation = lowerRaised * Quaternion.Euler(0f, angle, 0f);
         }
-
-        // 停回“举手结束”的姿势
-        rightUpperArm.localRotation = upperRaised;
-        rightLowerArm.localRotation = lowerRaised;
-
-        isWaving = false;
+        // 3. 放下手
+        else if (waveTimer < raiseDuration + holdDuration + lowerDuration)
+        {
+            float t = (waveTimer - raiseDuration - holdDuration) / lowerDuration;
+            rightUpperArm.localRotation = Quaternion.Slerp(upperRaised, upperArmStartRot, t);
+            rightLowerArm.localRotation = Quaternion.Slerp(lowerRaised, lowerArmStartRot, t);
+        }
+        else
+        {
+            rightUpperArm.localRotation = upperArmStartRot;
+            rightLowerArm.localRotation = lowerArmStartRot;
+            isWaving = false;
+        }
     }
 }
