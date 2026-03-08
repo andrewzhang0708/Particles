@@ -9,7 +9,8 @@ public class GuideController : MonoBehaviour
     [Header("Effect Objects")]
     public ParticleSystem guideParticleSystem;
     public GameObject arrivalSwirlParticles;
-    public GameObject humanModel;
+    public Transform humanAnchor;
+    public Transform humanModel;
 
     [Header("Guide Placement")]
     public float hoverHeight = 1.4f;
@@ -19,16 +20,23 @@ public class GuideController : MonoBehaviour
     [Header("Guide Movement")]
     public float moveSpeed = 0.8f;
     public float followLerpSpeed = 3.0f;
-    public float arriveDistance = 0.5f;
 
     [Header("Arrival")]
     public float playerArrivalDistance = 0.8f;
     public float swirlDuration = 2.0f;
     public float swirlRotationSpeed = 120f;
 
+    [Header("Human Reveal")]
+    public float humanHeightOffset = 0.0f;
+    public float humanGrowDuration = 1.2f;
+    public Vector3 humanFinalScale = Vector3.one;
+
     private bool reachedTarget = false;
     private bool transformationStarted = false;
+    private bool humanGrowing = false;
+
     private float arrivalTimer = 0f;
+    private float growTimer = 0f;
 
     void Start()
     {
@@ -42,8 +50,11 @@ public class GuideController : MonoBehaviour
         if (arrivalSwirlParticles != null)
             arrivalSwirlParticles.SetActive(false);
 
+        if (humanAnchor != null)
+            humanAnchor.gameObject.SetActive(false);
+
         if (humanModel != null)
-            humanModel.SetActive(false);
+            humanModel.localScale = Vector3.zero;
     }
 
     void Update()
@@ -55,9 +66,13 @@ public class GuideController : MonoBehaviour
             UpdateGuideMovement();
             CheckArrival();
         }
-        else
+        else if (!transformationStarted)
         {
             UpdateArrivalEffect();
+        }
+        else if (humanGrowing)
+        {
+            UpdateHumanGrowth();
         }
     }
 
@@ -117,8 +132,6 @@ public class GuideController : MonoBehaviour
 
     void UpdateArrivalEffect()
     {
-        if (transformationStarted) return;
-
         arrivalTimer += Time.deltaTime;
 
         if (arrivalSwirlParticles != null)
@@ -133,15 +146,41 @@ public class GuideController : MonoBehaviour
             if (arrivalSwirlParticles != null)
                 arrivalSwirlParticles.SetActive(false);
 
-            if (humanModel != null)
+            if (humanAnchor != null)
             {
-                humanModel.SetActive(true);
-                humanModel.transform.position = targetPoint.position;
-                humanModel.transform.rotation = Quaternion.LookRotation(
-                    player.position - humanModel.transform.position,
-                    Vector3.up
-                );
+                humanAnchor.gameObject.SetActive(true);
+                humanAnchor.position = targetPoint.position + Vector3.up * humanHeightOffset;
+
+                Vector3 lookDir = player.position - humanAnchor.position;
+                lookDir.y = 0f;
+                if (lookDir.sqrMagnitude > 0.001f)
+                    humanAnchor.rotation = Quaternion.LookRotation(lookDir, Vector3.up);
             }
+
+            if (humanModel != null)
+                humanModel.localScale = Vector3.zero;
+
+            humanGrowing = true;
+            growTimer = 0f;
+        }
+    }
+
+    void UpdateHumanGrowth()
+    {
+        if (humanModel == null) return;
+
+        growTimer += Time.deltaTime;
+        float t = Mathf.Clamp01(growTimer / humanGrowDuration);
+
+        // 用一个更有“长出来”感觉的 easing
+        float eased = 1f - Mathf.Pow(1f - t, 3f);
+
+        humanModel.localScale = Vector3.Lerp(Vector3.zero, humanFinalScale, eased);
+
+        if (t >= 1f)
+        {
+            humanGrowing = false;
+            humanModel.localScale = humanFinalScale;
         }
     }
 }
