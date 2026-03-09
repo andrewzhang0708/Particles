@@ -8,12 +8,13 @@ public class GuideController : MonoBehaviour
 
     public KyleWave kyleWave;
 
+    public KyleSpawner kyleSpawner;
+
     [Header("Effect Objects")]
     public ParticleSystem guideParticleSystem;
     public GameObject arrivalSwirlParticles;
     public Transform humanAnchor;
     public Transform humanModel;
-
     [Header("Guide Placement")]
     public float hoverHeight = 1.4f;
     public float idealFrontDistance = 1.2f;
@@ -148,22 +149,26 @@ public class GuideController : MonoBehaviour
             if (arrivalSwirlParticles != null)
                 arrivalSwirlParticles.SetActive(false);
 
-            if (humanAnchor != null)
+            // if (humanAnchor != null)
+            // {
+            //     humanAnchor.gameObject.SetActive(true);
+            //     humanAnchor.position = targetPoint.position + Vector3.up * humanHeightOffset;
+
+            //     Vector3 lookDir = player.position - humanAnchor.position;
+            //     lookDir.y = 0f;
+            //     if (lookDir.sqrMagnitude > 0.001f)
+            //         humanAnchor.rotation = Quaternion.LookRotation(lookDir, Vector3.up);
+            // }
+
+            // if (humanModel != null)
+            //     humanModel.localScale = Vector3.zero;
+
+            // humanGrowing = true;
+            // growTimer = 0f;
+            if(kyleSpawner != null)
             {
-                humanAnchor.gameObject.SetActive(true);
-                humanAnchor.position = targetPoint.position + Vector3.up * humanHeightOffset;
-
-                Vector3 lookDir = player.position - humanAnchor.position;
-                lookDir.y = 0f;
-                if (lookDir.sqrMagnitude > 0.001f)
-                    humanAnchor.rotation = Quaternion.LookRotation(lookDir, Vector3.up);
+                kyleSpawner.SpawnKyles();
             }
-
-            if (humanModel != null)
-                humanModel.localScale = Vector3.zero;
-
-            humanGrowing = true;
-            growTimer = 0f;
         }
     }
 

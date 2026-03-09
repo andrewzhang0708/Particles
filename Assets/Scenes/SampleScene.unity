@@ -1490,6 +1490,7 @@ MonoBehaviour:
   guideParticles: {fileID: 991646142}
   targetPoint: {fileID: 805480423}
   kyleWave: {fileID: 1964602106}
+  kyleSpawner: {fileID: 1964602098}
   guideParticleSystem: {fileID: 991646144}
   arrivalSwirlParticles: {fileID: 1273014086}
   humanAnchor: {fileID: 993082919}
@@ -6387,7 +6388,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &993082919
 Transform:
   m_ObjectHideFlags: 0

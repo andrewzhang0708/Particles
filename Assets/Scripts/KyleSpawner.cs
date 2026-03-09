@@ -8,12 +8,12 @@ public class KyleSpawner : MonoBehaviour
 
     public float waveDelaySpread = 1.5f;
 
-    void Start()
-    {
-        SpawnKyles();
-    }
+    // public void Start()
+    // {
+    //     SpawnKyles();
+    // }
 
-    void SpawnKyles()
+    public void SpawnKyles()
     {
         for (int i = 0; i < spawnPoints.Length; i++)
         {
